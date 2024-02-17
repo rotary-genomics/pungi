@@ -1,0 +1,26 @@
+[project]
+name = "Pungi"
+version = "0.1.0"
+description = """A library for building command-line applications that utilize the Snakemake workflow management system."""
+authors = [
+    {name = "Jackson M. Tsuji"},
+    {name = "Lee H. Bergstrand"}
+]
+
+license = {file = "LICENSE"}
+readme = "README.md"
+
+dependencies = [
+    "ruamel.yaml ~=0.17",
+    "psutil ~=5.9",
+]
+
+[tool.setuptools.packages]
+find = {}
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
