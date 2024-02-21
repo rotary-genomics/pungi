@@ -1,0 +1,22 @@
+package:
+  name: pungi
+  version: "0.1.0"
+
+source:
+  path: .
+
+requirements:
+  host:
+    - python
+    - pip
+  run:
+    - ruamel.yaml=0.17.35
+    - psutil=5.9.5
+
+build:
+  script: pip install .
+
+about:
+  home: https://github.com/rotary-genomics/pungi
+  license: BSD 3
+  license_file: LICENSE
