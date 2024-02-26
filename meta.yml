@@ -12,6 +12,7 @@ requirements:
   run:
     - ruamel.yaml=0.17.35
     - psutil=5.9.5
+    - snakemake=7.*
 
 build:
   script: pip install .
