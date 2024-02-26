@@ -74,18 +74,23 @@ class Dataset:
         """
         return iter(self.sample_dict.values())
 
-    def create_sample_tsv(self, output_dir_path, header):
+    def create_sample_tsv(self, output_dir_path, header, types=None):
         """
         Generates a TSV file in the output directory with a series of CLI paths for files belonging to each sample
         in the dataset.
 
-        :param header: The header to use in the sample TSV
         :param output_dir_path: The path to the output Rotary directory.
+        :param header: The header to use in the sample TSV
+        :param types: A special row that designates the types of the TSV columns.
+        For example, QIIME2 sample files have a "#q2:types" row below the header that describes the column types.
         """
         sample_tsv_path = os.path.join(output_dir_path, 'samples.tsv')
         with open(sample_tsv_path, 'w') as tsv_file:
             tsv_writer = csv.writer(tsv_file, delimiter='\t')
             tsv_writer.writerow(header)
+
+            if types:
+                tsv_writer.writerow(types)
 
             for current_sample in self.samples:
                 # Ensure that each row has the same number of fields as the header
@@ -126,13 +131,16 @@ def make_sample_from_sample_tsv_row(row, identifier_check=False, integrity_check
     return sample
 
 
-def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, integrity_check=False):
+def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, integrity_check=False, types=False):
     """
     Generates a Dataset from a sample TSV file.
+
 
     :param sample_tsv_path: Path to the sample TSV file.
     :param identifier_check: Optional parameter to perform identifier check. Default is False.
     :param integrity_check: Optional parameter to perform integrity check. Default is False.
+    :param types: Does the TSV have a special row that designates the types of the TSV columns?
+        For example, QIIME2 sample files have a "#q2:types" row below the header that describes the column types.
     :return: A Dataset object containing a series of Sample objects.
 
     :Example:
@@ -141,7 +149,11 @@ def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, in
     dataset = Dataset()
     with open(sample_tsv_path) as sample_file:
         tsv_reader = csv.reader(sample_file, delimiter="\t")
-        next(tsv_reader)  # Skip header row.
+        next(tsv_reader)  # Skip the header row.
+
+        if types:
+            next(tsv_reader) # Skip the typing row.
+
         for row in tsv_reader:
             sample = make_sample_from_sample_tsv_row(row, identifier_check=identifier_check,
                                                      integrity_check=integrity_check)
