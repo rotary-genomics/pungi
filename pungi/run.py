@@ -40,13 +40,14 @@ def dump_yaml_config(config, output_config_path):
         yaml.dump(config, file)
 
 
-def setup_run_directory(args, output_dir_path, run_files):
+def setup_run_directory(args, output_dir_path, run_files, config_path):
     """
     Sets up the basic configuration files inside the output directory.
 
     :param args: The command-line arguments.
     :param output_dir_path: The path to the output Rotary directory.
     :param run_files: A list of output files to check for once the snakemake run directory is created.
+    :param config_path: The path to the configuration file.
     :return: Path to the conda environment directory and the path to the configuration file.
     """
     # Check if run files exist in the output.
@@ -56,11 +57,7 @@ def setup_run_directory(args, output_dir_path, run_files):
 
     os.makedirs(output_dir_path, exist_ok=True)
 
-    input_config_path = get_cli_arg_path(args, 'config')
-    if not input_config_path:  # If no config is specified via CLI grab the default config.yaml.
-        input_config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'config.yaml')
-
-    config = load_yaml_config(input_config_path)
+    config = load_yaml_config(config_path)
 
     # modify config to use available CPU and RAM.
     config = modify_config_with_available_computational_resources(config)
