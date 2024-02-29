@@ -152,7 +152,7 @@ def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, in
         next(tsv_reader)  # Skip the header row.
 
         if types:
-            next(tsv_reader) # Skip the typing row.
+            next(tsv_reader)  # Skip the typing row.
 
         for row in tsv_reader:
             sample = make_sample_from_sample_tsv_row(row, identifier_check=identifier_check,
@@ -162,9 +162,10 @@ def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, in
     return dataset
 
 
-def generate_dataset_from_fastq_directory(input_path):
+def generate_dataset_from_fastq_directory(input_path, expected_files_per_sample=None):
     """
     :param input_path: The path to the directory containing the FASTQ files.
+    :param expected_files_per_sample: The number of files per sample.
     :return: A dataset generated from the FASTQ files.
 
     This method generates a Dataset object from the FASTQ files located in the specified directory. The method first
@@ -197,22 +198,12 @@ def generate_dataset_from_fastq_directory(input_path):
 
     samples = []
     for identifier, sequencing_files in samples_files.items():
-        if len(sequencing_files) != 3:
-            raise ValueError(f'Sample {identifier} should have three sequencing files')
+        if expected_files_per_sample:
+            if len(sequencing_files) != expected_files_per_sample:
+                raise ValueError(f'Sample {identifier} should have three sequencing files')
 
-        long_file = None
-        left_short_file = None
-        right_short_file = None
-        for file in sequencing_files:
-            if file.r_value == 'R1':
-                left_short_file = file
-            elif file.r_value == 'R2':
-                right_short_file = file
-            else:
-                long_file = file
-
-        sample = auto_create_sample_from_files(long_file, left_short_file, right_short_file,
-                                               identifier_check=True, integrity_check=True)
+        sample = auto_create_sample_from_files(*sequencing_files, identifier_check=True,
+                                               integrity_check=True)
         samples.append(sample)
     return Dataset(*samples)
 
