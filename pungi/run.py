@@ -47,7 +47,7 @@ def setup_run_directory(args, output_dir_path, run_files, config):
     :param args: The command-line arguments.
     :param output_dir_path: The path to the output Rotary directory.
     :param run_files: A list of output files to check for once the snakemake run directory is created.
-    :param config: The path to the configuration file.
+    :param config: A ruamel.yaml config object.
     :return: Path to the conda environment directory and the path to the configuration file.
     """
     # Check if run files exist in the output.
