@@ -147,3 +147,19 @@ def get_config_path(args, default_config_path):
     if not config_path:  # If no config is specified via CLI grab the default config.yaml.
         config_path = default_config_path
     return config_path
+
+
+def is_config_parameter_true(config, parameter_name):
+    """
+    Checks if the config parameter is true or false?
+
+    :param config: The ruamel.yaml config object that contains the parameter.
+    :param parameter_name: The name of the parameter.
+    :returns: The boolean value based if the config value is true.
+    """
+    if str(config.get(parameter_name)).lower() == 'true':
+        boolean_value = True
+    else:
+        boolean_value = False
+
+    return boolean_value
