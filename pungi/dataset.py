@@ -74,18 +74,23 @@ class Dataset:
         """
         return iter(self.sample_dict.values())
 
-    def create_sample_tsv(self, output_dir_path, header):
+    def create_sample_tsv(self, output_dir_path, header, types=None):
         """
         Generates a TSV file in the output directory with a series of CLI paths for files belonging to each sample
         in the dataset.
 
-        :param header: The header to use in the sample TSV
         :param output_dir_path: The path to the output Rotary directory.
+        :param header: The header to use in the sample TSV
+        :param types: A special row that designates the types of the TSV columns.
+        For example, QIIME2 sample files have a "#q2:types" row below the header that describes the column types.
         """
         sample_tsv_path = os.path.join(output_dir_path, 'samples.tsv')
         with open(sample_tsv_path, 'w') as tsv_file:
             tsv_writer = csv.writer(tsv_file, delimiter='\t')
             tsv_writer.writerow(header)
+
+            if types:
+                tsv_writer.writerow(types)
 
             for current_sample in self.samples:
                 # Ensure that each row has the same number of fields as the header
@@ -126,13 +131,16 @@ def make_sample_from_sample_tsv_row(row, identifier_check=False, integrity_check
     return sample
 
 
-def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, integrity_check=False):
+def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, integrity_check=False, types=False):
     """
     Generates a Dataset from a sample TSV file.
+
 
     :param sample_tsv_path: Path to the sample TSV file.
     :param identifier_check: Optional parameter to perform identifier check. Default is False.
     :param integrity_check: Optional parameter to perform integrity check. Default is False.
+    :param types: Does the TSV have a special row that designates the types of the TSV columns?
+        For example, QIIME2 sample files have a "#q2:types" row below the header that describes the column types.
     :return: A Dataset object containing a series of Sample objects.
 
     :Example:
@@ -141,7 +149,11 @@ def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, in
     dataset = Dataset()
     with open(sample_tsv_path) as sample_file:
         tsv_reader = csv.reader(sample_file, delimiter="\t")
-        next(tsv_reader)  # Skip header row.
+        next(tsv_reader)  # Skip the header row.
+
+        if types:
+            next(tsv_reader)  # Skip the typing row.
+
         for row in tsv_reader:
             sample = make_sample_from_sample_tsv_row(row, identifier_check=identifier_check,
                                                      integrity_check=integrity_check)
@@ -150,9 +162,10 @@ def generate_dataset_from_sample_tsv(sample_tsv_path, identifier_check=False, in
     return dataset
 
 
-def generate_dataset_from_fastq_directory(input_path):
+def generate_dataset_from_fastq_directory(input_path, expected_files_per_sample=None):
     """
     :param input_path: The path to the directory containing the FASTQ files.
+    :param expected_files_per_sample: The number of files per sample.
     :return: A dataset generated from the FASTQ files.
 
     This method generates a Dataset object from the FASTQ files located in the specified directory. The method first
@@ -185,22 +198,12 @@ def generate_dataset_from_fastq_directory(input_path):
 
     samples = []
     for identifier, sequencing_files in samples_files.items():
-        if len(sequencing_files) != 3:
-            raise ValueError(f'Sample {identifier} should have three sequencing files')
+        if expected_files_per_sample:
+            if len(sequencing_files) != expected_files_per_sample:
+                raise ValueError(f'Sample {identifier} should have three sequencing files')
 
-        long_file = None
-        left_short_file = None
-        right_short_file = None
-        for file in sequencing_files:
-            if file.r_value == 'R1':
-                left_short_file = file
-            elif file.r_value == 'R2':
-                right_short_file = file
-            else:
-                long_file = file
-
-        sample = auto_create_sample_from_files(long_file, left_short_file, right_short_file,
-                                               identifier_check=True, integrity_check=True)
+        sample = auto_create_sample_from_files(*sequencing_files, identifier_check=True,
+                                               integrity_check=True)
         samples.append(sample)
     return Dataset(*samples)
 

@@ -129,3 +129,37 @@ def is_fastq_file(file_name):
         is_fastq = False
 
     return is_fastq
+
+
+def get_config_path(args, default_config_path):
+    """
+    Retrieves the path to the configuration file.
+
+    This method first checks if a config path is specified as a command-line argument
+    using the 'config' flag. If a config path is found, it is returned. Otherwise, the
+    method returns the default configuration file path.
+
+    :param args: The command-line arguments passed to the program.
+    :param default_config_path: The path to the default configuration file.
+    :return: The path to the configuration file.
+    """
+    config_path = get_cli_arg_path(args, 'config')
+    if not config_path:  # If no config is specified via CLI grab the default config.yaml.
+        config_path = default_config_path
+    return config_path
+
+
+def is_config_parameter_true(config, parameter_name):
+    """
+    Checks if the config parameter is true or false?
+
+    :param config: The ruamel.yaml config object that contains the parameter.
+    :param parameter_name: The name of the parameter.
+    :returns: The boolean value based if the config value is true.
+    """
+    if str(config.get(parameter_name)).lower() == 'true':
+        boolean_value = True
+    else:
+        boolean_value = False
+
+    return boolean_value

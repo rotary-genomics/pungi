@@ -292,8 +292,21 @@ def auto_create_sample_from_files(*sequencing_files, identifier_check=False, int
         sample = ShortReadSample(sequencing_files[0], sequencing_files[1], identifier_check=identifier_check,
                                  integrity_check=integrity_check)
     elif len(sequencing_files) == 3:
-        sample = LongReadSampleWithPairedPolishingShortReads(sequencing_files[0], sequencing_files[1],
-                                                             sequencing_files[2], identifier_check=identifier_check,
+        long_file = sequencing_files[0]
+        left_short_file = sequencing_files[1]
+        right_short_file = sequencing_files[2]
+
+        if integrity_check:
+            for file in sequencing_files:
+                if file.r_value == 'R1':
+                    left_short_file = file
+                elif file.r_value == 'R2':
+                    right_short_file = file
+                else:
+                    long_file = file
+
+        sample = LongReadSampleWithPairedPolishingShortReads(long_file, left_short_file,
+                                                             right_short_file, identifier_check=identifier_check,
                                                              integrity_check=integrity_check)
     else:
         raise ValueError("Invalid number of sequencing files for the sample.")
